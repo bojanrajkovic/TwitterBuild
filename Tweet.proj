@@ -1,0 +1,13 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="SendTweet"
+             AssemblyFile=".\TwitterBuild\bin\Debug\TwitterBuild.dll" />
+  <Import Project="$(MSBuildThisFileDirectory)\Keys.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)\Keys.props')" />
+  <Target Name="Tweet">
+    <SendTweet TweetText="$(TweetText)"
+               ConsumerKey="$(ConsumerKey)"
+               TokenKey="$(TokenKey)"
+               ConsumerSecret="$(ConsumerSecret)"
+               TokenSecret="$(TokenSecret)" />
+  </Target>
+</Project>
