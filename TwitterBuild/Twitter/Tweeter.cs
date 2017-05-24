@@ -30,6 +30,38 @@ namespace TwitterBuild
             this.tokenSecret = tokenSecret;
         }
 
+        public async Task<Result<IEnumerable<Tweet>, Exception>> GetHomeTimelineAsync()
+        {
+            var requestUri = new Uri("https://api.twitter.com/1.1/statuses/home_timeline.json?count=50&exclude_replies=false");
+            var parameters = GenerateOAuthParameters(consumerKey, tokenKey);
+            var signature = CreateOAuthSignature(
+                consumerSecret,
+                tokenSecret,
+                "GET",
+                requestUri,
+                parameters
+            );
+
+            parameters.Add("oauth_signature", signature);
+
+            var authHeader = CreateOAuthHeader(parameters);
+
+            var req = new HttpRequestMessage(HttpMethod.Get, requestUri);
+            req.Headers.Add("User-Agent", "Swedish-Bot");
+            req.Headers.Add("Authorization", authHeader);
+
+            var res = await client.SendAsync(req, HttpCompletionOption.ResponseContentRead);
+            var content = await res.Content.ReadAsStringAsync();
+
+            try {
+                res.EnsureSuccessStatusCode();
+                return Ok<IEnumerable<Tweet>, Exception>(JsonConvert.DeserializeObject<IEnumerable<Tweet>>(content));
+            }
+            catch (Exception e) {
+                return Err<IEnumerable<Tweet>, Exception>(e);
+            }
+        }
+
         public async Task<Result<User, Exception>> GetUserAsync(string screenName)
         {
             Uri requestUri = new Uri("https://api.twitter.com/1.1/users/show.json?screen_name=" + Encode(screenName));
